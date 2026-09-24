@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Banshee出品">
+<meta name="theme-color" content="#1d1d1f">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" href="./icon-192.png">
+<title>Banshee 出品文ジェネレーター</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f2f1ee; --card:#fff; --ink:#1d1d1f; --sub:#6b6b70; --line:#e2e0db;
+  --accent:#1d6b3a; --danger:#b5342c; --warn:#8a6d00; --warnbg:#fff8e1;
+  --pad:14px;
+}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  -webkit-text-size-adjust:100%;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom));
+}
+header{
+  position:sticky; top:0; z-index:20; background:#1d1d1f; color:#fff;
+  padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+  display:flex; align-items:center; gap:10px;
+}
+header h1{margin:0;font-size:16px;font-weight:600;flex:1}
+header button{
+  background:#3a3a3d;color:#fff;border:0;border-radius:8px;padding:7px 11px;
+  font-size:13px;cursor:pointer
+}
+header button:disabled{opacity:.4}
+.layout{display:block;padding:12px;max-width:1400px;margin:0 auto}
+@media(min-width:768px){
+  .layout{display:grid;grid-template-columns:minmax(320px,420px) 1fr;gap:14px;align-items:start}
+  body{padding-bottom:24px}
+  .sticky-bar{position:static!important;background:none!important;border:0!important;padding:0!important;box-shadow:none!important}
+}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:var(--pad);margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:14px;font-weight:600;color:var(--sub);letter-spacing:.04em}
+label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
+input[type=text],input[type=number],input[type=password],select,textarea{
+  width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;
+  font:inherit;font-size:15px;background:#fff;color:var(--ink)
+}
+textarea{resize:vertical}
+#drop{
+  border:2px dashed #c9c6bf;border-radius:12px;padding:20px 12px;text-align:center;
+  color:var(--sub);font-size:13px;cursor:pointer;background:#fbfaf8
+}
+#drop.hot{border-color:var(--accent);background:#eef6f0}
+#thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.thumb{position:relative;width:86px}
+.thumb img{width:86px;height:86px;object-fit:cover;border-radius:8px;display:block;border:1px solid var(--line)}
+.thumb .no{position:absolute;top:3px;left:3px;background:rgba(0,0,0,.72);color:#fff;font-size:10px;padding:1px 5px;border-radius:4px}
+.thumb .main{background:var(--accent)}
+.thumb .ops{display:flex;gap:2px;margin-top:3px}
+.thumb .ops button{flex:1;font-size:12px;padding:3px 0;border:1px solid var(--line);background:#fff;border-radius:5px;cursor:pointer}
+.sticky-bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(242,241,238,.96);
+  border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+}
+.primary{
+  width:100%;background:var(--accent);color:#fff;border:0;border-radius:10px;
+  padding:14px;font-size:16px;font-weight:600;cursor:pointer
+}
+.primary:disabled{background:#9bb0a3}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tabs button{
+  flex:1;min-width:76px;padding:9px 6px;border:1px solid var(--line);background:#fff;
+  border-radius:8px;font-size:13px;cursor:pointer;color:var(--sub)
+}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button .badge{display:inline-block;background:var(--danger);color:#fff;border-radius:9px;font-size:10px;padding:0 5px;margin-left:4px}
+.pane{display:none}
+.pane.on{display:block}
+.title-opt{display:flex;gap:8px;align-items:flex-start;padding:8px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;background:#fff}
+.title-opt input{margin-top:5px}
+.title-opt .t{flex:1;font-size:14px;word-break:break-all}
+.count{font-size:11px;color:var(--sub);margin-top:2px}
+.count.over{color:var(--danger);font-weight:700}
+.row{display:flex;gap:8px;align-items:center;margin:8px 0}
+.row .grow{flex:1}
+button.mini{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 11px;font-size:13px;cursor:pointer}
+button.mini:active{background:#eee}
+table.spec{width:100%;border-collapse:collapse;font-size:13px}
+table.spec td{border-bottom:1px solid var(--line);padding:6px 4px;vertical-align:top}
+table.spec td:first-child{width:38%;color:var(--sub)}
+table.spec td.empty{color:var(--danger)}
+.warn{background:var(--warnbg);border:1px solid #efe0a8;color:var(--warn);border-radius:8px;padding:9px 11px;font-size:13px;margin-bottom:8px}
+.err{background:#fff0ee;border:1px solid #f0c8c2;color:var(--danger);border-radius:8px;padding:9px 11px;font-size:13px;margin-bottom:8px}
+ul.list{margin:6px 0;padding-left:20px;font-size:13px}
+.hist{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.hist .h{flex:none;width:96px;cursor:pointer}
+.hist .h img{width:96px;height:72px;object-fit:cover;border-radius:7px;border:1px solid var(--line);display:block;background:#ddd}
+.hist .h span{display:block;font-size:10px;color:var(--sub);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+dialog{border:0;border-radius:14px;padding:0;max-width:560px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dlg-body{padding:16px;max-height:76vh;overflow:auto}
+.dlg-head{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);font-weight:600}
+.dlg-head .grow{flex:1}
+#toast{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));
+  background:#1d1d1f;color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;z-index:60;
+  opacity:0;pointer-events:none;transition:opacity .2s
+}
+#toast.on{opacity:1}
+.small{font-size:12px;color:var(--sub)}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Banshee 出品文ジェネレーター</h1>
+  <button id="btnRegen" disabled>再生成</button>
+  <button id="btnSettings" aria-label="設定">⚙</button>
+</header>
+
+<div class="layout">
+  <!-- 左：入力 -->
+  <div>
+    <div class="card">
+      <h2>① 商品写真（最大6枚・1枚目がメイン）</h2>
+      <div id="drop">タップして写真を選択／ここにドラッグ&amp;ドロップ<br><span class="small">長辺1600pxに縮小して送信します</span></div>
+      <input id="file" type="file" accept="image/*" multiple hidden>
+      <div id="thumbs"></div>
+      <div id="imgNote"></div>
+    </div>
+
+    <div class="card">
+      <h2>② カテゴリ</h2>
+      <select id="category">
+        <option value="auto">自動判定</option>
+        <option value="apparel">アパレル</option>
+        <option value="bag">バッグ・革小物</option>
+        <option value="accessory">アクセサリー・シルバー</option>
+        <option value="watch">時計</option>
+        <option value="other">その他</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <h2>③ 補足情報（すべて任意）</h2>
+      <label for="sBrand">ブランド名</label>
+      <input id="sBrand" type="text" placeholder="LONE ONES">
+      <label for="sSize">サイズ表記</label>
+      <input id="sSize" type="text" placeholder="M / 18号 / 24cm">
+      <label for="sMeas">実寸</label>
+      <textarea id="sMeas" rows="2" placeholder="着丈70 身幅55 肩幅48 袖丈62"></textarea>
+      <label for="sAcc">付属品</label>
+      <input id="sAcc" type="text" placeholder="箱、保存袋、ギャランティ">
+      <label for="sCond">状態メモ</label>
+      <textarea id="sCond" rows="2" placeholder="左袖に小さなシミ"></textarea>
+      <label for="sCost">仕入れ値（円・出品文には使いません）</label>
+      <input id="sCost" type="number" inputmode="numeric" placeholder="17000">
+    </div>
+  </div>
+
+  <!-- 右：出力 -->
+  <div>
+    <div class="card" id="outCard">
+      <div class="row">
+        <div class="grow">
+          <div class="tabs" id="tabs">
+            <button data-t="mercari" class="on">メルカリ</button>
+            <button data-t="yahoo">ヤフオク</button>
+            <button data-t="ebay">eBay</button>
+            <button data-t="check">要確認<span class="badge" id="checkBadge" hidden>0</span></button>
+          </div>
+        </div>
+      </div>
+      <div id="status" class="small">写真を選んで「生成」を押してください。</div>
+
+      <!-- メルカリ -->
+      <div class="pane on" data-p="mercari">
+        <div class="row">
+          <span class="small grow">テンプレ</span>
+          <button class="mini" id="tplToggle">A（ハイブランド小物）</button>
+        </div>
+        <h2>タイトル候補（40字以内）</h2>
+        <div id="mTitles"></div>
+        <div class="row"><button class="mini grow" data-copy="mTitleSel">選択中のタイトルをコピー</button></div>
+        <h2>説明文</h2>
+        <textarea id="mBody" rows="18"></textarea>
+        <div class="count" id="mCount"></div>
+        <div class="row"><button class="mini grow" data-copy="mBody">説明文をコピー</button></div>
+      </div>
+
+      <!-- ヤフオク -->
+      <div class="pane" data-p="yahoo">
+        <h2>タイトル候補（65字以内）</h2>
+        <div id="yTitles"></div>
+        <div class="row"><button class="mini grow" data-copy="yTitleSel">選択中のタイトルをコピー</button></div>
+        <h2>説明文</h2>
+        <textarea id="yBody" rows="18"></textarea>
+        <div class="count" id="yCount"></div>
+        <div class="row"><button class="mini grow" data-copy="yBody">説明文をコピー</button></div>
+      </div>
+
+      <!-- eBay -->
+      <div class="pane" data-p="ebay">
+        <h2>Title（80 chars max）</h2>
+        <div id="eTitles"></div>
+        <div class="row"><button class="mini grow" data-copy="eTitleSel">Copy selected title</button></div>
+        <h2>Item Specifics</h2>
+        <table class="spec"><tbody id="eSpecs"></tbody></table>
+        <h2>Description</h2>
+        <textarea id="eBody" rows="14"></textarea>
+        <div class="count" id="eCount"></div>
+        <div class="row"><button class="mini grow" data-copy="eBody">Copy description</button></div>
+      </div>
+
+      <!-- 要確認 -->
+      <div class="pane" data-p="check">
+        <div id="checkArea"></div>
+        <div class="row"><button class="mini grow" id="btnTsv">登録用データをコピー</button></div>
+        <div class="small">商品名 / 仕入れ値 / ブランド / カテゴリ / 状態ランク をタブ区切りでコピーします（管理表へ手で貼り付け）。</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>履歴（直近50件）</h2>
+      <div class="hist" id="hist"></div>
+    </div>
+  </div>
+</div>
+
+<div class="sticky-bar">
+  <button class="primary" id="btnGen">生成</button>
+</div>
+
+<dialog id="dlgSettings">
+  <div class="dlg-head"><span class="grow">設定</span><button class="mini" id="dlgClose">閉じる</button></div>
+  <div class="dlg-body">
+    <label for="cfgKey">Gemini APIキー（この端末のlocalStorageにのみ保存）</label>
+    <input id="cfgKey" type="password" autocomplete="off" placeholder="AIza...">
+    <label for="cfgModel">モデル名</label>
+    <input id="cfgModel" type="text" placeholder="gemini-2.0-flash">
+    <label for="cfgAbout">【Bansheeについて】本文（テンプレAで使用）</label>
+    <textarea id="cfgAbout" rows="5"></textarea>
+    <label for="cfgClosing">締めの一文</label>
+    <textarea id="cfgClosing" rows="3"></textarea>
+    <label for="cfgTags">固定ハッシュタグ</label>
+    <input id="cfgTags" type="text" placeholder="#Banshee">
+    <div class="row">
+      <button class="mini grow" id="cfgSave">保存</button>
+      <button class="mini" id="cfgExport">書き出し</button>
+      <button class="mini" id="cfgImport">読み込み</button>
+    </div>
+    <input id="cfgFile" type="file" accept="application/json,.json" hidden>
+    <p class="small">APIキーはこの端末にだけ保存され、送信先はGoogleのGemini APIのみです。書き出したJSONにはAPIキーが含まれます。取り扱いに注意してください。</p>
+  </div>
+</dialog>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Banshee 出品文ジェネレーター v1
+   - Gemini APIを1回だけ呼び、構造化JSONを受け取る
+   - 文章の組み立て（テンプレ適用・文字数調整）はこのJS側で行う
+   ============================================================ */
+
+const KOBUTSU = "愛知県公安委員会 第542652509100号";
+const LINE = "━━━━━━━━━━━━━━━";
+const LS_CFG = "banshee.listing.settings.v1";
+const LS_HIST = "banshee.listing.history.v1";
+
+const DEFAULT_CFG = {
+  apiKey: "",
+  model: "gemini-2.0-flash",
+  about:
+    "当ショップは古物商許可を取得し、ブランドオークションにてお譲りいただいた商品を出品しております。\n" +
+    "検品のうえ丁寧に梱包してお送りしますが、中古品のため見落としがある場合はご容赦ください。",
+  closing:
+    "ご不明な点はお気軽にコメントください(^^)\n最後までご覧いただきありがとうございました☆",
+  tags: "#Banshee",
+};
+
+const TPL_A_CATS = ["bag", "accessory", "watch"];
+const CAT_JA = { apparel: "アパレル", bag: "バッグ・革小物", accessory: "アクセサリー・シルバー", watch: "時計", other: "その他" };
+
+let cfg = loadCfg();
+let photos = [];          // {dataUrl, mime, name}
+let result = null;        // Geminiが返したJSON
+let lastInputs = null;    // 生成時の補足情報
+let tpl = "A";            // テンプレA/B
+let built = {};           // 組み立て済みテキスト
+let abortCtl = null;
+
+/* ---------- 小物 ---------- */
+const $ = (s) => document.querySelector(s);
+const len = (s) => Array.from(s || "").length;
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(t._tm); t._tm = setTimeout(() => t.classList.remove("on"), 1800);
+}
+function loadCfg() {
+  try { return Object.assign({}, DEFAULT_CFG, JSON.parse(localStorage.getItem(LS_CFG) || "{}")); }
+  catch (_) { return Object.assign({}, DEFAULT_CFG); }
+}
+function saveCfg() { localStorage.setItem(LS_CFG, JSON.stringify(cfg)); }
+
+/* ---------- 画像 ---------- */
+$("#drop").addEventListener("click", () => $("#file").click());
+$("#file").addEventListener("change", (e) => addFiles(e.target.files));
+["dragover", "dragenter"].forEach((ev) =>
+  $("#drop").addEventListener(ev, (e) => { e.preventDefault(); $("#drop").classList.add("hot"); }));
+["dragleave", "drop"].forEach((ev) =>
+  $("#drop").addEventListener(ev, (e) => { e.preventDefault(); $("#drop").classList.remove("hot"); }));
+$("#drop").addEventListener("drop", (e) => { if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files); });
+
+async function addFiles(fileList) {
+  const files = Array.from(fileList || []);
+  $("#imgNote").innerHTML = "";
+  for (const f of files) {
+    if (photos.length >= 6) { toast("写真は6枚までです"); break; }
+    try {
+      const img = await resizeToDataUrl(f, 1600, 0.85);
+      photos.push({ dataUrl: img, mime: "image/jpeg", name: f.name });
+    } catch (err) {
+      const heic = /heic|heif/i.test(f.type) || /\.hei[cf]$/i.test(f.name);
+      $("#imgNote").innerHTML =
+        '<div class="err">' + (heic
+          ? "この写真（" + esc(f.name) + "）はHEIC形式で、このブラウザでは読み込めません。JPEGに変換してから選んでください。"
+          : "画像を読み込めませんでした：" + esc(f.name)) + "</div>";
+    }
+  }
+  $("#file").value = "";
+  renderThumbs();
+}
+
+function resizeToDataUrl(file, maxSide, quality) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const im = new Image();
+    im.onload = () => {
+      try {
+        const scale = Math.min(1, maxSide / Math.max(im.width, im.height));
+        const w = Math.max(1, Math.round(im.width * scale));
+        const h = Math.max(1, Math.round(im.height * scale));
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        c.getContext("2d").drawImage(im, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        resolve(c.toDataURL("image/jpeg", quality));
+      } catch (e) { URL.revokeObjectURL(url); reject(e); }
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); reject(new Error("decode failed")); };
+    im.src = url;
+  });
+}
+
+function renderThumbs() {
+  const box = $("#thumbs"); box.innerHTML = "";
+  photos.forEach((p, i) => {
+    const d = document.createElement("div");
+    d.className = "thumb";
+    d.innerHTML =
+      '<img src="' + p.dataUrl + '" alt="">' +
+      '<span class="no' + (i === 0 ? " main" : "") + '">' + (i === 0 ? "メイン" : i + 1) + "</span>" +
+      '<div class="ops"><button data-op="l">◀</button><button data-op="r">▶</button><button data-op="x">✕</button></div>';
+    d.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
+      const op = b.dataset.op;
+      if (op === "x") photos.splice(i, 1);
+      if (op === "l" && i > 0) photos.splice(i - 1, 0, photos.splice(i, 1)[0]);
+      if (op === "r" && i < photos.length - 1) photos.splice(i + 1, 0, photos.splice(i, 1)[0]);
+      renderThumbs();
+    }));
+    box.appendChild(d);
+  });
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+/* ---------- Gemini ---------- */
+const SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    category: { type: "STRING", enum: ["apparel", "bag", "accessory", "watch", "other"] },
+    brand: { type: "STRING" }, brand_en: { type: "STRING" },
+    item_type: { type: "STRING" }, item_type_en: { type: "STRING" },
+    model_name: { type: "STRING" },
+    color: { type: "STRING" }, color_en: { type: "STRING" },
+    material: { type: "STRING" }, material_en: { type: "STRING" },
+    size_label: { type: "STRING" }, measurements: { type: "STRING" },
+    made_in: { type: "STRING" },
+    accessories: { type: "ARRAY", items: { type: "STRING" } },
+    condition_rank: { type: "STRING", enum: ["S", "A", "AB", "B", "C"] },
+    condition_points: { type: "ARRAY", items: { type: "STRING" } },
+    condition_en: { type: "STRING" },
+    catch_copy: { type: "STRING" }, catch_copy_en: { type: "STRING" },
+    titles_mercari: { type: "ARRAY", items: { type: "STRING" } },
+    titles_yahoo: { type: "ARRAY", items: { type: "STRING" } },
+    titles_ebay: { type: "ARRAY", items: { type: "STRING" } },
+    ebay_description: { type: "STRING" },
+    hashtags: { type: "ARRAY", items: { type: "STRING" } },
+    needs_check: { type: "ARRAY", items: { type: "STRING" } },
+  },
+  required: ["category", "brand", "item_type", "condition_rank", "catch_copy",
+             "titles_mercari", "titles_yahoo", "titles_ebay", "ebay_description", "needs_check"],
+};
+
+const SYSTEM = [
+  "あなたは中古ブランド品・古着の出品文作成担当です。古物商許可を持つ日本のリユースショップの出品として書いてください。",
+  "写真と補足情報だけを根拠にします。写真で確認できないことを事実として書かないでください。推測で埋めた項目・判断できなかった項目は needs_check に日本語で入れます。",
+  "補足情報に書かれた内容は写真より優先します。",
+  "真贋を断定する表現（本物・正規品・正規品保証・鑑定済み・保証 など）は書かないでください。ブランド名を書くことは問題ありません。",
+  "絵文字は使用禁止です。使ってよい記号は (^^) ☆ ♪ のみ。",
+  "タイトルは「ブランド名 → アイテム種別 → モデル名/特徴 → 色・サイズ」の順で、検索されやすい語を前に置きます。【】★ などの装飾記号を入れすぎないこと。",
+  "タイトルの文字数上限：メルカリ40字、ヤフオク65字、eBay80文字（英語）。上限内に必ず収めること。",
+  "状態ランクの基準： S=未使用に近い（目立つ傷・汚れなし） / A=使用感が少ない（小傷程度） / AB=多少の使用感（スレ・小傷あり） / B=使用感あり（目立つスレ・傷・汚れあり） / C=難あり（ダメージが大きい）",
+  "condition_points は具体的な箇所と程度を書きます（例：底角に軽いスレ）。写真で見えない面について「写真でご確認ください」のような逃げ文句は書かず、needs_check に回してください。",
+  "catch_copy は商品説明の本文段落（2〜4文）。魅力・使いやすさ・合わせ方を書きます。",
+  "カテゴリ別に拾うべき情報：",
+  "・アパレル：ブランドタグ、サイズタグ、洗濯表示（素材・製造国）、品番タグ",
+  "・バッグ・革小物：素材、刻印、シリアル/製造番号の有無（番号そのものは説明文に書かない）、内側・角・持ち手の状態",
+  "・アクセサリー・シルバー：刻印（925、ブランド刻印）、サイズ（号数・長さ）、重さ（補足入力があれば）、黒ずみ・小傷",
+  "・時計：ブランド、モデル、ムーブメント種別（クォーツ/自動巻き。読めた場合のみ）、ケース径、ベルト、風防・ケースの傷、稼働状況（補足入力がなければ needs_check へ）",
+  "eBayの英文はネイティブが読んで自然な簡潔英語にします。Condition はeBayの区分（Pre-owned など）に合う表現にしてください。",
+  "読み取れない項目は空文字にし、勝手に作り話をしないこと。",
+  "出力は指定されたJSONスキーマのみ。",
+].join("\n");
+
+async function callGemini(imgs, sup, signal) {
+  if (!cfg.apiKey) { const e = new Error("NOKEY"); e.code = "NOKEY"; throw e; }
+  const supLines = [];
+  if (sup.category !== "auto") supLines.push("・カテゴリ（人が指定）: " + CAT_JA[sup.category] + "（category は " + sup.category + " にすること）");
+  if (sup.brand) supLines.push("・ブランド名: " + sup.brand);
+  if (sup.size) supLines.push("・サイズ表記: " + sup.size);
+  if (sup.meas) supLines.push("・実寸: " + sup.meas);
+  if (sup.acc) supLines.push("・付属品: " + sup.acc);
+  if (sup.cond) supLines.push("・状態メモ: " + sup.cond);
+  const userText =
+    "次の商品写真" + imgs.length + "枚を解析し、JSONを出力してください。\n\n# 補足情報（写真より優先）\n" +
+    (supLines.length ? supLines.join("\n") : "（補足なし。すべて写真から読み取り、読めないものは needs_check へ）");
+
+  const parts = [{ text: userText }];
+  for (const p of imgs) parts.push({ inline_data: { mime_type: p.mime, data: p.dataUrl.split(",")[1] } });
+
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/" +
+    encodeURIComponent(cfg.model || DEFAULT_CFG.model) + ":generateContent?key=" + encodeURIComponent(cfg.apiKey);
+
+  const resp = await fetch(url, {
+    method: "POST", signal,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: SYSTEM }] },
+      contents: [{ role: "user", parts }],
+      generationConfig: { temperature: 0.6, topP: 0.95, maxOutputTokens: 4096,
+        responseMimeType: "application/json", responseSchema: SCHEMA },
+    }),
+  });
+
+  if (!resp.ok) {
+    let detail = "";
+    try { const j = await resp.json(); detail = (j.error && j.error.message) || ""; } catch (_) {}
+    const e = new Error(detail || ("HTTP " + resp.status)); e.status = resp.status; throw e;
+  }
+  const data = await resp.json();
+  const text = (((data.candidates || [])[0] || {}).content || {}).parts
+    ? data.candidates[0].content.parts.map((p) => p.text || "").join("") : "";
+  if (!text) {
+    const reason = (data.promptFeedback && data.promptFeedback.blockReason) ||
+      ((data.candidates || [])[0] || {}).finishReason || "応答が空でした";
+    const e = new Error("生成できませんでした（" + reason + "）"); e.status = 0; throw e;
+  }
+  return text;
+}
+
+function parseJson(text) {
+  try { return JSON.parse(text); } catch (_) {}
+  const m = text.match(/\{[\s\S]*\}/);
+  if (m) { try { return JSON.parse(m[0]); } catch (_) {} }
+  return null;
+}
+
+/* ---------- テンプレ組み立て ---------- */
+function joinAcc(a) {
+  const arr = (a || []).filter(Boolean);
+  return arr.length ? arr.join("、") : "なし";
+}
+function sentences(s) {
+  return String(s || "").split("。").filter((x) => x.trim() !== "").map((x) => x + "。");
+}
+
+function buildBody(d, opts) {
+  const o = Object.assign({ tpl: "A", maxTags: 99, rankNote: true, catchCount: 99, yahoo: false }, opts || {});
+  const head = o.yahoo
+    ? "ご覧いただきありがとうございます。落札後は24時間以内にご連絡をお願いいたします。"
+    : "ご覧いただきありがとうございます。";
+  const promo = o.yahoo
+    ? "他にもブランド品を多数出品しております。ぜひ出品者の他の商品もご覧ください。"
+    : "＃Banshee全商品／他にもブランド品を多数出品しております(^^)／ぜひあわせてご覧ください☆";
+
+  const titleLine = [d.brand, d.item_type, d.model_name].filter(Boolean).join(" ");
+  const catches = sentences(d.catch_copy).slice(0, o.catchCount).join("");
+
+  const detail = [];
+  detail.push("ブランド：" + (d.brand || ""));
+  detail.push("アイテム：" + (d.item_type || ""));
+  if (d.model_name) detail.push("モデル：" + d.model_name);
+  if (d.color) detail.push("カラー：" + d.color);
+  if (d.material) detail.push("素材：" + d.material);
+  if (d.size_label) detail.push("サイズ：" + d.size_label);
+  if (d.measurements) detail.push("実寸：" + d.measurements);
+  if (d.made_in) detail.push("製造国：" + d.made_in);
+  detail.push("付属品：" + joinAcc(d.accessories));
+
+  const pts = (d.condition_points || []).filter(Boolean).map((p) => "・" + p);
+
+  const out = [];
+  out.push(head, "");
+  out.push(LINE, titleLine, LINE);
+  if (catches) out.push(catches);
+  if (d.catch_copy_en) out.push(d.catch_copy_en);
+  out.push("", promo, "");
+  out.push(LINE, "商品詳細", LINE);
+  out.push(detail.join("\n"));
+  out.push("", LINE, "状態／Condition", LINE);
+  out.push("ランク：" + (d.condition_rank || ""));
+  if (pts.length) out.push(pts.join("\n"));
+  if (d.condition_en) out.push(d.condition_en);
+  if (o.rankNote) out.push("", "※ランク基準 S：未使用に近い／A：使用感少／AB：多少の使用感／B：使用感あり／C：難あり");
+  if (o.tpl === "A") {
+    out.push("", LINE, "Bansheeについて", LINE);
+    out.push(cfg.about);
+    out.push("古物商許可：" + KOBUTSU);
+  }
+  out.push("", cfg.closing);
+  if (!o.yahoo) {
+    const fixed = (cfg.tags || "").trim();
+    const tags = (d.hashtags || []).filter(Boolean).filter((t) => t.trim() !== fixed);
+    const line = [fixed].concat(tags.slice(0, o.maxTags)).filter(Boolean).join(" ");
+    if (line) out.push("", line);
+  }
+  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/* メルカリ1000字に収める（削る順：ハッシュタグ→ランク基準→catch_copy末尾） */
+function buildMercari(d) {
+  let opts = { tpl: tpl, maxTags: 99, rankNote: true, catchCount: 99 };
+  let body = buildBody(d, opts);
+  const nTags = (d.hashtags || []).length;
+  for (let k = nTags; k >= 0 && len(body) > 1000; k--) { opts.maxTags = k; body = buildBody(d, opts); }
+  if (len(body) > 1000) { opts.rankNote = false; body = buildBody(d, opts); }
+  const nS = sentences(d.catch_copy).length;
+  for (let k = nS - 1; k >= 0 && len(body) > 1000; k--) { opts.catchCount = k; body = buildBody(d, opts); }
+  return body;
+}
+
+const EBAY_FOOTER =
+  "Shipped from Japan with tracking.\n" +
+  "All items are pre-owned and sold by a licensed secondhand dealer in Japan.\n" +
+  "Please check all photos carefully before purchase.";
+
+function ebaySpecs(d) {
+  return [
+    ["Brand", d.brand_en || d.brand || ""],
+    ["Type", d.item_type_en || ""],
+    ["Style", d.model_name || d.item_type_en || ""],
+    ["Department", ""],
+    ["Material", d.material_en || ""],
+    ["Color", d.color_en || ""],
+    ["Size", d.size_label || ""],
+    ["Model", d.model_name || ""],
+    ["Country of Manufacture", d.made_in || ""],
+    ["Condition", d.condition_rank === "S" ? "Pre-owned (like new)" : "Pre-owned"],
+  ];
+}
+
+function buildAll() {
+  const d = result;
+  built = {
+    mercari: buildMercari(d),
+    yahoo: buildBody(d, { tpl: tpl, yahoo: true }),
+    ebay: (d.ebay_description || "").trim() + "\n\n" + EBAY_FOOTER,
+  };
+}
+
+/* ---------- 警告（§6） ---------- */
+const NG_WORDS = ["本物", "正規品", "鑑定済", "真贋保証", "保証付", "100% Authentic", "Authentic guaranteed"];
+function checkText(label, text) {
+  const w = [];
+  const scrub = String(text || "").split(KOBUTSU).join("");
+  NG_WORDS.forEach((n) => { if (scrub.includes(n)) w.push(label + "：断定語「" + n + "」が含まれています（自動削除はしていません）"); });
+  const emo = Array.from(scrub).filter((c) => /\p{Extended_Pictographic}/u.test(c) && c !== "☆" && c !== "♪");
+  if (emo.length) w.push(label + "：絵文字が含まれています → " + Array.from(new Set(emo)).join(" "));
+  const serial = (scrub.match(/[A-Za-z0-9]{8,}/g) || []).filter((x) => /[0-9]/.test(x));
+  if (serial.length === 0) { /* 英単語だけの連続は除外 */ }
+  if (serial.length) w.push(label + "：シリアル番号らしき文字列が含まれています → " + Array.from(new Set(serial)).slice(0, 5).join(" / "));
+  return w;
+}
+
+/* ---------- 描画 ---------- */
+function titleBlock(id, list, limit, sel) {
+  const box = $(id); box.innerHTML = "";
+  (list || []).slice(0, 3).forEach((t, i) => {
+    const n = len(t);
+    const d = document.createElement("label");
+    d.className = "title-opt";
+    d.innerHTML = '<input type="radio" name="' + id.slice(1) + '" value="' + i + '"' + (i === 0 ? " checked" : "") + ">" +
+      '<span class="t">' + esc(t) + '<span class="count' + (n > limit ? " over" : "") + '">' + n + " / " + limit + "字</span></span>";
+    box.appendChild(d);
+  });
+}
+function selectedTitle(id, list) {
+  const r = document.querySelector('input[name="' + id.slice(1) + '"]:checked');
+  return (list || [])[r ? Number(r.value) : 0] || "";
+}
+function setCount(el, text, limit) {
+  const n = len(text);
+  el.textContent = n + " / " + limit + "字";
+  el.className = "count" + (n > limit ? " over" : "");
+}
+
+function render() {
+  const d = result;
+  $("#tplToggle").textContent = tpl === "A" ? "A（ハイブランド小物）" : "B（アパレル・その他）";
+  titleBlock("#mTitles", d.titles_mercari, 40);
+  titleBlock("#yTitles", d.titles_yahoo, 65);
+  titleBlock("#eTitles", d.titles_ebay, 80);
+  $("#mBody").value = built.mercari;
+  $("#yBody").value = built.yahoo;
+  $("#eBody").value = built.ebay;
+  setCount($("#mCount"), built.mercari, 1000);
+  setCount($("#yCount"), built.yahoo, 20000);
+  setCount($("#eCount"), built.ebay, 4000);
+
+  const tb = $("#eSpecs"); tb.innerHTML = "";
+  ebaySpecs(d).forEach(([k, v]) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + k + '</td><td class="' + (v ? "" : "empty") + '">' + esc(v || "（要確認）") + "</td>" +
+      '<td style="width:64px"><button class="mini">copy</button></td>';
+    tr.querySelector("button").addEventListener("click", () => copy(v || ""));
+    tb.appendChild(tr);
+  });
+
+  renderChecks();
+}
+
+/* 要確認タブ（説明文を編集するたびに引き直す） */
+function renderChecks() {
+  const d = result; if (!d) return;
+  const warns = []
+    .concat(checkText("メルカリ説明文", $("#mBody").value))
+    .concat(checkText("ヤフオク説明文", $("#yBody").value))
+    .concat(checkText("メルカリのタイトル候補", (d.titles_mercari || []).join(" ")))
+    .concat(checkText("ヤフオクのタイトル候補", (d.titles_yahoo || []).join(" ")));
+  const nc = (d.needs_check || []).filter(Boolean);
+  let html = "";
+  if (len($("#mBody").value) > 1000) html += '<div class="err">メルカリ説明文が1000字を超えています。手動で削ってください。</div>';
+  warns.forEach((w) => { html += '<div class="warn">' + esc(w) + "</div>"; });
+  html += "<h2>AIが判断できなかった／推測で埋めた項目</h2>";
+  html += nc.length ? '<ul class="list">' + nc.map((x) => "<li>" + esc(x) + "</li>").join("") + "</ul>"
+                    : '<p class="small">なし（それでも現物とタグは必ず照合してください）</p>';
+  html += '<div class="warn">真贋の断定はしない方針です。刻印・シリアルは説明文に書かず、判断はShimbaが現物で行ってください。</div>';
+  $("#checkArea").innerHTML = html;
+  const badge = $("#checkBadge");
+  const total = warns.length + nc.length;
+  badge.hidden = total === 0; badge.textContent = total;
+}
+
+/* ---------- 生成 ---------- */
+async function generate() {
+  if (photos.length === 0) { toast("写真を選んでください"); return; }
+  if (!cfg.apiKey) { toast("APIキーが未設定です"); openSettings(); return; }
+  const sup = {
+    category: $("#category").value,
+    brand: $("#sBrand").value.trim(), size: $("#sSize").value.trim(),
+    meas: $("#sMeas").value.trim(), acc: $("#sAcc").value.trim(),
+    cond: $("#sCond").value.trim(), cost: $("#sCost").value.trim(),
+  };
+  lastInputs = sup;
+  abortCtl = new AbortController();
+  $("#btnGen").disabled = true;
+  $("#status").innerHTML = '<span class="spin" style="border-color:#1d6b3a;border-top-color:transparent"></span>解析中… <button class="mini" id="btnAbort">中止</button>';
+  $("#btnAbort").addEventListener("click", () => { if (abortCtl) abortCtl.abort(); });
+
+  try {
+    let text = await callGemini(photos, sup, abortCtl.signal);
+    let json = parseJson(text);
+    if (!json) { // 1回だけ自動リトライ
+      $("#status").textContent = "応答を解釈できませんでした。1回だけ再試行します…";
+      text = await callGemini(photos, sup, abortCtl.signal);
+      json = parseJson(text);
+    }
+    if (!json) {
+      $("#status").innerHTML = '<span class="err">JSONを解釈できませんでした。生の応答を要確認タブに表示しています。</span>';
+      $("#checkArea").innerHTML = '<div class="err">JSONパース失敗。以下が生の応答です。</div><textarea rows="12">' + esc(text) + "</textarea>";
+      switchTab("check");
+      return;
+    }
+    result = json;
+    if (sup.category !== "auto") result.category = sup.category;
+    if (sup.brand) result.brand = sup.brand;
+    if (sup.size) result.size_label = sup.size;
+    if (sup.meas) result.measurements = sup.meas;
+    if (sup.acc && (!result.accessories || !result.accessories.length))
+      result.accessories = sup.acc.split(/[、,]/).map((s) => s.trim()).filter(Boolean);
+    tpl = TPL_A_CATS.indexOf(result.category) >= 0 ? "A" : "B";
+    buildAll(); render();
+    $("#status").textContent = "生成しました（" + (CAT_JA[result.category] || result.category) + "／テンプレ" + tpl + "）。";
+    $("#btnRegen").disabled = false;
+    saveHistory();
+  } catch (e) {
+    if (e.name === "AbortError") { $("#status").textContent = "中止しました。入力は残っています。"; }
+    else if (e.code === "NOKEY") { $("#status").innerHTML = '<span class="err">APIキーが未設定です。⚙から設定してください。</span>'; openSettings(); }
+    else if (e.status === 401 || e.status === 403) { $("#status").innerHTML = '<span class="err">APIキーを確認してください（' + e.status + "）。</span>"; }
+    else if (e.status === 429) { $("#status").innerHTML = '<span class="err">利用上限に達しました。少し待って再実行してください。</span>'; }
+    else if (e.status === undefined) { $("#status").innerHTML = '<span class="err">通信に失敗しました。電波を確認して再実行してください（入力は保持しています）。</span>'; }
+    else { $("#status").innerHTML = '<span class="err">' + esc(e.message || String(e)) + "</span>"; }
+  } finally {
+    $("#btnGen").disabled = false; abortCtl = null;
+  }
+}
+
+/* ---------- 履歴 ---------- */
+function loadHist() { try { return JSON.parse(localStorage.getItem(LS_HIST) || "[]"); } catch (_) { return []; } }
+async function saveHistory() {
+  try {
+    const thumb = photos[0] ? await shrink(photos[0].dataUrl, 240, 0.5) : "";
+    const hist = loadHist();
+    hist.unshift({ ts: Date.now(), thumb, data: result, inputs: lastInputs, tpl });
+    while (hist.length > 50) hist.pop();
+    let ok = false;
+    while (!ok && hist.length) {
+      try { localStorage.setItem(LS_HIST, JSON.stringify(hist)); ok = true; }
+      catch (_) { hist.pop(); }
+    }
+    renderHist();
+  } catch (_) {}
+}
+function shrink(dataUrl, maxSide, q) {
+  return new Promise((res) => {
+    const im = new Image();
+    im.onload = () => {
+      const s = Math.min(1, maxSide / Math.max(im.width, im.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(im.width * s); c.height = Math.round(im.height * s);
+      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+      res(c.toDataURL("image/jpeg", q));
+    };
+    im.onerror = () => res("");
+    im.src = dataUrl;
+  });
+}
+function renderHist() {
+  const box = $("#hist"); const hist = loadHist(); box.innerHTML = "";
+  if (!hist.length) { box.innerHTML = '<span class="small">まだありません。</span>'; return; }
+  hist.forEach((h, i) => {
+    const d = document.createElement("div"); d.className = "h";
+    const t = new Date(h.ts);
+    d.innerHTML = (h.thumb ? '<img src="' + h.thumb + '" alt="">' : '<img alt="">') +
+      "<span>" + (h.data && h.data.brand ? esc(h.data.brand) : "—") + "</span>" +
+      '<span>' + (t.getMonth() + 1) + "/" + t.getDate() + " " + String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") + "</span>";
+    d.addEventListener("click", () => {
+      result = h.data; tpl = h.tpl || "A"; lastInputs = h.inputs || {};
+      buildAll(); render(); $("#status").textContent = "履歴から復元しました。";
+      $("#btnRegen").disabled = photos.length === 0;
+    });
+    box.appendChild(d);
+  });
+}
+
+/* ---------- コピー ---------- */
+async function copy(text) {
+  if (!text) { toast("コピーする内容がありません"); return; }
+  try { await navigator.clipboard.writeText(text); toast("コピーしました"); return; } catch (_) {}
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { document.execCommand("copy"); toast("コピーしました"); } catch (_) { toast("コピーできませんでした"); }
+  ta.remove();
+}
+document.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => {
+  const k = b.dataset.copy;
+  if (!result) { toast("先に生成してください"); return; }
+  if (k === "mTitleSel") return copy(selectedTitle("#mTitles", result.titles_mercari));
+  if (k === "yTitleSel") return copy(selectedTitle("#yTitles", result.titles_yahoo));
+  if (k === "eTitleSel") return copy(selectedTitle("#eTitles", result.titles_ebay));
+  copy($("#" + k).value);
+}));
+$("#btnTsv").addEventListener("click", () => {
+  if (!result) { toast("先に生成してください"); return; }
+  const name = [result.brand, result.item_type, result.model_name].filter(Boolean).join(" ");
+  const row = [name, (lastInputs && lastInputs.cost) || "", result.brand || "",
+    CAT_JA[result.category] || result.category || "", result.condition_rank || ""].join("\t");
+  copy(row);
+});
+
+/* ---------- タブ・トグル ---------- */
+function switchTab(name) {
+  document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.t === name));
+  document.querySelectorAll(".pane").forEach((p) => p.classList.toggle("on", p.dataset.p === name));
+}
+document.querySelectorAll("#tabs button").forEach((b) => b.addEventListener("click", () => switchTab(b.dataset.t)));
+$("#tplToggle").addEventListener("click", () => {
+  if (!result) { toast("先に生成してください"); return; }
+  tpl = tpl === "A" ? "B" : "A"; buildAll(); render();
+});
+$("#mBody").addEventListener("input", () => { setCount($("#mCount"), $("#mBody").value, 1000); renderChecks(); });
+$("#yBody").addEventListener("input", () => { setCount($("#yCount"), $("#yBody").value, 20000); renderChecks(); });
+$("#eBody").addEventListener("input", () => { setCount($("#eCount"), $("#eBody").value, 4000); });
+$("#btnGen").addEventListener("click", generate);
+$("#btnRegen").addEventListener("click", generate);
+
+/* ---------- 設定 ---------- */
+function openSettings() {
+  $("#cfgKey").value = cfg.apiKey; $("#cfgModel").value = cfg.model;
+  $("#cfgAbout").value = cfg.about; $("#cfgClosing").value = cfg.closing; $("#cfgTags").value = cfg.tags;
+  $("#dlgSettings").showModal();
+}
+$("#btnSettings").addEventListener("click", openSettings);
+$("#dlgClose").addEventListener("click", () => $("#dlgSettings").close());
+$("#cfgSave").addEventListener("click", () => {
+  cfg = { apiKey: $("#cfgKey").value.trim(), model: $("#cfgModel").value.trim() || DEFAULT_CFG.model,
+    about: $("#cfgAbout").value, closing: $("#cfgClosing").value, tags: $("#cfgTags").value.trim() };
+  saveCfg(); if (result) { buildAll(); render(); }
+  toast("保存しました"); $("#dlgSettings").close();
+});
+$("#cfgExport").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "banshee-listing-settings.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+});
+$("#cfgImport").addEventListener("click", () => $("#cfgFile").click());
+$("#cfgFile").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    cfg = Object.assign({}, DEFAULT_CFG, j); saveCfg(); openSettings(); toast("読み込みました");
+  } catch (_) { toast("JSONを読めませんでした"); }
+  e.target.value = "";
+});
+
+/* ---------- 起動 ---------- */
+renderHist();
+if (!cfg.apiKey) $("#status").innerHTML = '<span class="warn" style="display:block">APIキーが未設定です。右上の ⚙ から設定してください。</span>';
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
