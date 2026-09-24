@@ -3,6 +3,8 @@
 商品写真を撮るだけで、販路別（メルカリ／ラクマ／Yahoo!フリマ／ヤフオク／eBay）の出品タイトルと説明文を作るWebアプリです。
 iPhone（Safari・ホーム画面に追加）とMac（Chrome / Safari）で同じURLを使います。
 
+**公開URL： https://irielifereggaemusic0125-eng.github.io/banshee-listing/**
+
 v1のスコープは **撮影 → 解析 → 販路別テキスト生成 → コピー** まで。スプレッドシート連携はv2です。
 
 ---
@@ -24,7 +26,12 @@ banshee-listing/
 
 ## 2. デプロイ手順（GitHub Pages）
 
-HTTPSでないとiPhoneのカメラ・クリップボード・ホーム画面追加が正しく動かないため、GitHub Pagesに置きます。
+**すでに構築済みです。** リポジトリは `irielifereggaemusic0125-eng/banshee-listing`（public）。
+更新は `git add -A && git commit -m "update" && git push` だけで、1〜2分後に公開URLへ反映されます。
+
+> privateで作りましたが、無料プランではPrivate Pagesが使えず（API応答：Your current plan does not support GitHub Pages for this repository）、publicへ変更しました。公開されるのはアプリのコードとこのREADMEだけで、APIキー・在庫データ・顧客情報は含まれていません。
+
+以下は最初から作り直す場合の手順です。HTTPSでないとiPhoneのカメラ・クリップボード・ホーム画面追加が正しく動かないため、GitHub Pagesに置きます。
 
 ```bash
 cd ~/Downloads/Banshee/banshee-listing
@@ -45,7 +52,7 @@ gh api -X POST repos/:owner/banshee-listing/pages -f source[branch]=main -f sour
 1〜2分後に次のURLで開きます。
 
 ```
-https://<あなたのGitHubユーザー名>.github.io/banshee-listing/
+https://irielifereggaemusic0125-eng.github.io/banshee-listing/
 ```
 
 更新するときは `git add -A && git commit -m "update" && git push` だけです。
@@ -71,7 +78,7 @@ https://<あなたのGitHubユーザー名>.github.io/banshee-listing/
 3. **アプリケーションの制限** → 「ウェブサイト」を選択
 4. 「ウェブサイトの制限」に次の2つを追加
    ```
-   https://<あなたのGitHubユーザー名>.github.io/*
+   https://irielifereggaemusic0125-eng.github.io/*
    http://localhost:*
    ```
    （2つ目はMacでのローカル確認用。不要なら省略可）
@@ -89,7 +96,7 @@ https://<あなたのGitHubユーザー名>.github.io/banshee-listing/
 
 ## 4. iPhoneのホーム画面に追加する
 
-1. Safariで `https://<ユーザー名>.github.io/banshee-listing/` を開く
+1. Safariで `https://irielifereggaemusic0125-eng.github.io/banshee-listing/` を開く
 2. 下部の共有ボタン（□に↑）をタップ
 3. 「ホーム画面に追加」→ 名前は「Banshee出品」→ 追加
 4. ホーム画面のアイコンから起動（アドレスバーなしのアプリ表示になります）
